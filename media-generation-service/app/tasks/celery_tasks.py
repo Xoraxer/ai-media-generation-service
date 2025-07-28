@@ -56,6 +56,14 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                     
                     # Download image
                     if replicate_client.download_image(image_url, local_path):
+                        # Verify file was actually saved
+                        if os.path.exists(local_path):
+                            file_size = os.path.getsize(local_path)
+                            logger.info(f"File saved successfully: {local_path} ({file_size} bytes)")
+                        else:
+                            logger.error(f"File was not saved: {local_path}")
+                            raise Exception("File was not saved to filesystem")
+                        
                         # Update job as completed with relative path for API serving
                         media_url = f"/images/{filename}"
                         SyncJobService.update_job(
