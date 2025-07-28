@@ -1,0 +1,29 @@
+# FastAPI and Server
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+
+# Celery and Redis
+celery[redis]==5.3.6
+redis==5.0.3
+
+# Database
+sqlalchemy[asyncio]==2.0.29
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Migrations
+alembic==1.13.1
+
+# Validation and Configuration
+pydantic==2.7.0
+pydantic-settings==2.2.1
+
+# External APIs and HTTP
+replicate==0.25.1
+requests==2.31.0
+
+# Utilities
+python-dotenv==1.0.1
+python-multipart==0.0.9
+
+# CORS is built into FastAPI, no additional package needed 

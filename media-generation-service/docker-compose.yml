@@ -1,0 +1,89 @@
+services:
+  # Local PostgreSQL (for development only - you'll use Render in production)
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: media_generation
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d media_generation"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # FastAPI Web Application
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+      - REDIS_URL=redis://redis:6379/0
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-your_replicate_token_here}
+      - DEBUG=true
+      - PROJECT_NAME=Media Generation Service
+      - API_V1_PREFIX=/api/v1
+      - STORAGE_PATH=./storage
+    volumes:
+      - ./storage:/app/storage
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker for Background Tasks
+  worker:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+      - REDIS_URL=redis://redis:6379/0
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
+      - DEBUG=true
+    volumes:
+      - ./storage:/app/storage
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    command: celery -A worker.celery_app worker --loglevel=info --queues=media_generation,default
+
+  # React Frontend Application
+  frontend:
+    build: 
+      context: ../media-generation-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://web:8000/api/v1
+    depends_on:
+      - web
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data: 
