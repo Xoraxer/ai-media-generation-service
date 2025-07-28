@@ -56,12 +56,13 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                     
                     # Download image
                     if replicate_client.download_image(image_url, local_path):
-                        # Update job as completed
+                        # Update job as completed with relative path for API serving
+                        media_url = f"/images/{filename}"
                         SyncJobService.update_job(
                             db, job_id,
                             JobUpdate(
                                 status=JobStatus.COMPLETED,
-                                media_path=local_path
+                                media_path=media_url
                             )
                         )
                         logger.info(f"Job {job_id} completed successfully")
