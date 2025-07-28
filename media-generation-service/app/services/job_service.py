@@ -98,6 +98,84 @@ class AsyncJobService:
         logger.info(f"Deleted {deleted_count} jobs with broken local image paths")
         return deleted_count
 
+    @staticmethod
+    async def delete_jobs_with_missing_images(db: AsyncSession) -> int:
+        """Delete completed jobs where the image file doesn't exist on disk."""
+        from pathlib import Path
+        
+        # Get all completed jobs with local image paths (both formats)
+        result = await db.execute(
+            select(Job).where(
+                (Job.status == JobStatus.COMPLETED.value) &
+                (
+                    (Job.media_path.like('/images/%')) |
+                    (Job.media_path.like('./storage/generated/%'))
+                )
+            )
+        )
+        jobs = result.scalars().all()
+        
+        jobs_to_delete = []
+        for job in jobs:
+            if job.media_path:
+                # Extract filename from different path formats
+                if job.media_path.startswith('/images/'):
+                    filename = job.media_path.split('/')[-1]
+                elif job.media_path.startswith('./storage/generated/'):
+                    filename = job.media_path.split('/')[-1]
+                else:
+                    continue
+                    
+                image_path = Path("storage/generated") / filename
+                
+                if not image_path.exists():
+                    jobs_to_delete.append(job.id)
+                    logger.info(f"Image file not found for job {job.id}: {image_path} (media_path: {job.media_path})")
+        
+        if jobs_to_delete:
+            await db.execute(
+                delete(Job).where(Job.id.in_(jobs_to_delete))
+            )
+            await db.commit()
+            
+        deleted_count = len(jobs_to_delete)
+        logger.info(f"Deleted {deleted_count} jobs with missing image files")
+        return deleted_count
+
+    @staticmethod
+    async def fix_incorrect_image_paths(db: AsyncSession) -> int:
+        """Fix jobs with incorrect image paths (./storage/generated/ format)."""
+        # Get jobs with old path format
+        result = await db.execute(
+            select(Job).where(
+                (Job.status == JobStatus.COMPLETED.value) &
+                (Job.media_path.like('./storage/generated/%'))
+            )
+        )
+        jobs = result.scalars().all()
+        
+        fixed_count = 0
+        for job in jobs:
+            if job.media_path:
+                # Extract filename and convert to new format
+                filename = job.media_path.split('/')[-1]
+                new_path = f"/images/{filename}"
+                
+                # Update the job with correct path
+                await db.execute(
+                    update(Job)
+                    .where(Job.id == job.id)
+                    .values(media_path=new_path)
+                )
+                fixed_count += 1
+                logger.info(f"Fixed path for job {job.id}: {job.media_path} -> {new_path}")
+        
+        if fixed_count > 0:
+            await db.commit()
+            
+        logger.info(f"Fixed {fixed_count} jobs with incorrect image paths")
+        return fixed_count
+
 
 class SyncJobService:
     """Sync service for Celery tasks."""

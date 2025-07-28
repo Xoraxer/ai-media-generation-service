@@ -56,9 +56,14 @@ class ApiClient {
       return mediaPath;
     }
     
-    // For local paths, construct the full URL
+    // For local paths starting with /images/, use the API endpoint
+    if (mediaPath.startsWith('/images/')) {
+      return `${API_BASE_URL}${mediaPath}`;
+    }
+    
+    // Legacy support: if it's just a filename, construct the path
     const filename = mediaPath.split('/').pop();
-    return `${API_BASE_URL.replace('/api/v1', '')}/images/${filename}`;
+    return `${API_BASE_URL}/images/${filename}`;
   }
 }
 

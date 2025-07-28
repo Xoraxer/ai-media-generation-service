@@ -30,14 +30,10 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
       // Load only completed jobs for history view
       const jobsData = await apiClient.getCompletedJobs(0, 50);
       
-      // Remove duplicates and filter out jobs with broken local paths
-      const uniqueJobs = jobsData.filter((job, index, self) => {
-        // Remove duplicates by ID
-        const isUnique = self.findIndex(j => j.id === job.id) === index;
-        // Remove jobs with broken local image paths
-        const hasValidImage = !job.media_path?.startsWith('/images/');
-        return isUnique && hasValidImage;
-      });
+      // Remove duplicates by ID
+      const uniqueJobs = jobsData.filter((job, index, self) => 
+        self.findIndex(j => j.id === job.id) === index
+      );
       
       setJobs(uniqueJobs);
 
@@ -163,7 +159,7 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                {job.status === 'completed' && job.media_path && (
+                {job.status === 'completed' && job.media_path ? (
                   <div className="aspect-square relative overflow-hidden rounded-md bg-muted">
                     <img
                       src={apiClient.getImageUrl(job.media_path)}
@@ -175,9 +171,7 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
                       }}
                     />
                   </div>
-                )}
-
-                {job.status === 'failed' && (
+                ) : job.status === 'failed' ? (
                   <div className="aspect-square flex items-center justify-center bg-destructive/10 rounded-md">
                     <div className="text-center">
                       <XCircle className="w-12 h-12 mx-auto mb-2 text-destructive" />
@@ -189,21 +183,12 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
                       )}
                     </div>
                   </div>
-                )}
-
-                {/* Show completed image */}
-                {job.media_path && (
-                  <div className="aspect-square overflow-hidden rounded-md bg-muted">
-                    <img
-                      src={apiClient.getImageUrl(job.media_path)}
-                      alt={job.prompt}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback for broken images
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
+                ) : (
+                  <div className="aspect-square flex items-center justify-center bg-muted rounded-md">
+                    <div className="text-center">
+                      <Clock className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Processing...</p>
+                    </div>
                   </div>
                 )}
 

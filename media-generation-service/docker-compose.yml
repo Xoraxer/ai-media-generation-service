@@ -34,36 +34,54 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/media_generation
       - REDIS_URL=redis://redis:6379/0
       - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-your_replicate_token_here}
       - DEBUG=true
       - PROJECT_NAME=Media Generation Service
       - API_V1_PREFIX=/api/v1
       - STORAGE_PATH=./storage
+      - MAX_RETRIES=3
+      - RETRY_BACKOFF_BASE=2.0
     volumes:
-      # Note: No storage volume needed - images served from Replicate CDN
       - .:/app
+      - image_storage:/app/storage/generated
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 5 &&
+        echo 'Running database migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting FastAPI server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
 
   # Celery Worker for Background Tasks
   worker:
     build: .
     environment:
-      - DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+      - DATABASE_URL=postgresql+asyncpg://user:password@db:5432/media_generation
       - REDIS_URL=redis://redis:6379/0
       - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
       - DEBUG=true
+      - MAX_RETRIES=3
+      - RETRY_BACKOFF_BASE=2.0
     volumes:
-      # Note: No storage volume needed - images served from Replicate CDN
       - .:/app
+      - image_storage:/app/storage/generated
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
+      web:
+        condition: service_started
     restart: unless-stopped
     command: celery -A worker.celery_app worker --loglevel=info --queues=media_generation,default
 
@@ -75,7 +93,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://web:8000/api/v1
+      - VITE_API_URL=http://localhost:8000/api/v1
     depends_on:
       - web
     restart: unless-stopped
@@ -86,4 +104,5 @@ services:
       retries: 3
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  image_storage: 

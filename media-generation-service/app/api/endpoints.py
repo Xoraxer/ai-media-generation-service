@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_async_db
 from app.models.schemas import GenerateRequest, JobResponse, JobStatusResponse, JobCreate
@@ -6,6 +7,8 @@ from app.services.job_service import AsyncJobService
 from app.tasks.celery_tasks import process_media_generation
 from typing import List
 import logging
+import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -114,6 +117,48 @@ async def delete_jobs_with_broken_images(
         "message": f"Successfully deleted {deleted_count} jobs with broken local image paths",
         "deleted_count": deleted_count
     }
+
+
+@router.delete("/jobs/missing-images", tags=["Jobs"])
+async def delete_jobs_with_missing_images(
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Delete completed jobs where the image file doesn't exist on disk."""
+    deleted_count = await AsyncJobService.delete_jobs_with_missing_images(db)
+    return {
+        "message": f"Successfully deleted {deleted_count} jobs with missing image files",
+        "deleted_count": deleted_count
+    }
+
+
+@router.post("/jobs/fix-paths", tags=["Jobs"])
+async def fix_incorrect_image_paths(
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Fix jobs with incorrect image paths (./storage/generated/ format)."""
+    fixed_count = await AsyncJobService.fix_incorrect_image_paths(db)
+    return {
+        "message": f"Successfully fixed {fixed_count} jobs with incorrect image paths",
+        "fixed_count": fixed_count
+    }
+
+
+@router.get("/images/{filename}", tags=["Images"])
+async def serve_image(filename: str):
+    """Serve generated images from local storage."""
+    image_path = Path("storage/generated") / filename
+    
+    if not image_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found"
+        )
+    
+    return FileResponse(
+        path=str(image_path),
+        media_type="image/png",
+        filename=filename
+    )
 
 
 @router.get("/health", tags=["Health"])
