@@ -1,13 +1,29 @@
 # AI Media Generation Service
 
-A production-ready full-stack application for AI image generation using the Replicate API. Built with modern technologies and enterprise-level architecture patterns.
+A production-ready full-stack application for AI image generation using the Replicate API. Built with modern technologies and enterprise-level architecture patterns for a Senior Backend Engineer assignment.
+
+## ⚠️ SECURITY NOTICE - DEMO PROJECT ONLY
+
+**This is a private demo project with committed `.env` files for easier testing and demonstration purposes.**
+
+🔴 **WARNING**: The `.env` files in this repository contain production database credentials and are committed to version control. This is **NEVER** recommended for real production applications but is done here to simplify setup for demo purposes.
+
+**Production services running on Render.com:**
+- PostgreSQL Database: `dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com`
+- Redis Cache: `red-ctsjhcq3esus73c0kp9g`
+
+**In a real production environment, you should:**
+- Never commit `.env` files to version control
+- Use environment variables set directly in your deployment platform
+- Use secrets management services
+- Rotate credentials regularly
 
 ## 🏗️ Architecture Overview
 
-This project demonstrates senior-level backend engineering with a complete full-stack implementation:
+This project demonstrates senior-level backend engineering with:
 
 - **FastAPI Backend**: Async API with job queue management
-- **React Frontend**: Modern SPA with TypeScript and Shadcn UI  
+- **React Frontend**: Modern SPA with TypeScript and real-time updates
 - **Celery Workers**: Background processing for image generation
 - **Redis Queue**: Job queue and caching system
 - **PostgreSQL**: Persistent data storage with migrations
@@ -16,9 +32,9 @@ This project demonstrates senior-level backend engineering with a complete full-
 
 ### Backend Highlights
 - ✅ **Async-First Architecture**: Full async/await with AsyncPG
-- ✅ **Production Job Queue**: Celery with Redis and retry logic
+- ✅ **Production Job Queue**: Celery with Redis and exponential backoff retry logic
 - ✅ **Real API Integration**: Replicate API for AI image generation
-- ✅ **Robust Error Handling**: Exponential backoff and failure recovery
+- ✅ **Robust Error Handling**: Comprehensive retry and failure recovery
 - ✅ **Type Safety**: Pydantic models and validation throughout
 - ✅ **Clean Architecture**: Service layer pattern with separation of concerns
 - ✅ **Database Migrations**: Alembic for schema versioning
@@ -28,141 +44,39 @@ This project demonstrates senior-level backend engineering with a complete full-
 - ✅ **Modern React**: TypeScript, Vite, and component-based architecture
 - ✅ **Real-time Updates**: Job status polling and live UI updates
 - ✅ **Professional UI**: Shadcn UI components with responsive design
-- ✅ **Error Handling**: Comprehensive error boundaries and user feedback
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Docker - Recommended)
 
 ### Prerequisites
-
-- **Docker & Docker Compose** (recommended for easiest setup)
-- **Node.js 18+** (for frontend development)
-- **Python 3.9+** (for backend development)
+- **Docker & Docker Compose** 
 - **Replicate API Token** ([Get one here](https://replicate.com/account/api-tokens))
 
-### Option 1: Docker Setup (Recommended)
+### Setup & Run
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd demo_project
-   ```
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd demo_project/media-generation-service
 
-2. **Set up environment variables:**
-   ```bash
-   # Backend environment
-   cp media-generation-service/.env.example media-generation-service/.env
-   
-   # Frontend environment  
-   cp media-generation-frontend/.env.example media-generation-frontend/.env
-   
-   # Edit the .env files with your Replicate API token
-   ```
+# 2. Environment variables are already configured
+# The .env files are included in this repo for demo purposes
+# Just add your Replicate API token to media-generation-service/.env:
+# REPLICATE_API_TOKEN=your_actual_token_here
 
-3. **Start all services:**
-   ```bash
-   cd media-generation-service
-   docker-compose up --build
-   ```
+# 3. Start all services
+docker compose up --build
 
-4. **Access the application:**
-   - **Frontend**: http://localhost:5173
-   - **Backend API**: http://localhost:8000
-   - **API Documentation**: http://localhost:8000/docs
-
-### Option 2: Manual Setup
-
-#### Backend Setup
-
-1. **Navigate to backend:**
-   ```bash
-   cd media-generation-service
-   ```
-
-2. **Create virtual environment:**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-5. **Start infrastructure (PostgreSQL + Redis):**
-   ```bash
-   docker-compose up -d db redis
-   ```
-
-6. **Run database migrations:**
-   ```bash
-   alembic upgrade head
-   ```
-
-7. **Start the API server:**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-8. **Start Celery worker (new terminal):**
-   ```bash
-   celery -A worker.celery_app worker --loglevel=info
-   ```
-
-#### Frontend Setup
-
-1. **Navigate to frontend:**
-   ```bash
-   cd media-generation-frontend
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Default values should work for local development
-   ```
-
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
-
-## 📋 Environment Configuration
-
-### Backend (.env)
-```env
-# Database
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/media_generation
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
-
-# Replicate API (REQUIRED)
-REPLICATE_API_TOKEN=your_replicate_token_here
-
-# Application
-DEBUG=True
-PROJECT_NAME="Media Generation Service"
-API_V1_PREFIX="/api/v1"
-STORAGE_PATH="./storage"
-MAX_RETRIES=3
+# 4. Access the application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# API Documentation: http://localhost:8000/docs
 ```
 
-### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:8000/api/v1
-```
+That's it! The entire application stack will be running with:
+- PostgreSQL database with auto-migrations
+- Redis for job queue
+- FastAPI backend with async workers
+- React frontend with real-time updates
 
 ## 🔧 API Endpoints
 
@@ -172,7 +86,7 @@ VITE_API_URL=http://localhost:8000/api/v1
 - `GET /api/v1/jobs` - List recent jobs
 - `GET /api/v1/health` - Health check
 
-### Documentation
+### Interactive Documentation
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
@@ -197,24 +111,7 @@ app/
     └── celery_app.py        # Celery configuration
 ```
 
-### Frontend Architecture
-```
-src/
-├── components/
-│   ├── ui/                  # Shadcn UI components
-│   ├── GenerateTab.tsx      # Image generation interface
-│   ├── HistoryTab.tsx       # Job history and gallery
-│   └── ArchitectureTab.tsx  # Technical documentation
-├── lib/
-│   ├── api.ts               # Type-safe API client
-│   └── polling.ts           # Real-time job status polling
-├── types/
-│   └── api.ts               # TypeScript definitions
-└── App.tsx                  # Main application
-```
-
-## 🔄 Data Flow
-
+### Data Flow
 1. **User submits prompt** → Frontend sends POST to `/generate`
 2. **Job created** → Database record with "pending" status
 3. **Task queued** → Celery task enqueued to Redis
@@ -224,79 +121,88 @@ src/
 7. **Status update** → Job marked as "completed" with image path
 8. **Real-time updates** → Frontend polls and displays result
 
-## 🛠️ Development
+## 🛠️ Manual Development Setup (Optional)
 
-### Testing
+If you prefer to run services individually:
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+### Backend Setup
 ```bash
-# Backend
-pytest                        # Run tests
-pytest --cov=app             # With coverage
+cd media-generation-service
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env with your configuration
 
-# Frontend
-npm test                      # Run tests
+# Start infrastructure
+docker compose up -d db redis
+
+# Run migrations
+alembic upgrade head
+
+# Start API server
+uvicorn app.main:app --reload
+
+# Start Celery worker (new terminal)
+celery -A worker.celery_app worker --loglevel=info
 ```
 
-## 🚢 Deployment
-
-### Docker Production
+### Frontend Setup
 ```bash
-# Build and start all services
-docker-compose -f docker-compose.prod.yml up --build -d
-
-# Check service health
-docker-compose ps
+cd media-generation-frontend
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-### Environment Variables for Production
-Ensure these are set in your production environment:
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_URL` - Redis connection string  
-- `REPLICATE_API_TOKEN` - Your Replicate API token
-- `DEBUG=False` - Disable debug mode
+</details>
 
-## 📊 Monitoring
+## 📝 Assignment Requirements Met
 
-### Health Checks
-- **API Health**: `GET /api/v1/health`
-- **Service Status**: `docker-compose ps`
-- **Logs**: `docker-compose logs -f [service]`
+✅ **API Layer**: FastAPI with POST /generate and GET /status endpoints  
+✅ **Async Job Queue**: Celery with Redis and automatic retries (3 retries, exponential backoff)  
+✅ **Persistent Storage**: PostgreSQL + local file system  
+✅ **Async Architecture**: Full async/await throughout  
+✅ **Error Handling**: Comprehensive retry and failure logic  
+✅ **Configuration**: Environment-based with secrets management  
+✅ **Clean Architecture**: Service layer with separation of concerns  
 
-### Key Metrics
-- Job processing times
-- Queue depths
-- Error rates
-- API response times
+### Bonus Features Implemented
+✅ **Pydantic**: Full type validation and schemas  
+✅ **Docker**: Complete containerization setup  
+✅ **Alembic**: Database migration management  
+✅ **Async ORM**: SQLAlchemy 2.0 with AsyncPG  
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
 1. **"Connection refused" errors**
-   - Ensure PostgreSQL and Redis are running
-   - Check connection strings in .env
+   - Ensure Docker is running
+   - Wait for health checks to pass: `docker compose ps`
 
 2. **Replicate API errors**
-   - Verify your API token is correct
+   - Verify your API token in `.env`
    - Check API rate limits
 
 3. **Images not loading**
-   - Ensure storage directory exists and is writable
-   - Check static file serving configuration
+   - Check storage directory permissions
+   - Verify static file serving at `/images/`
 
 ### Debug Commands
 ```bash
 # Check service status
-docker-compose ps
+docker compose ps
 
 # View logs
-docker-compose logs -f web
-docker-compose logs -f worker
+docker compose logs -f web
+docker compose logs -f worker
 
-# Database connection test
-docker-compose exec web python -c "from app.core.database import async_engine; print('DB OK')"
-
-# Redis connection test
-docker-compose exec web python -c "import redis; r=redis.from_url('redis://redis:6379'); print(r.ping())"
+# Test API health
+curl http://localhost:8000/api/v1/health
 ```
 
 ## 🏆 Technical Highlights
@@ -306,11 +212,10 @@ This project demonstrates senior-level engineering practices:
 ### Architecture Patterns
 - **Clean Architecture** with clear separation of concerns
 - **Service Layer Pattern** for business logic encapsulation
-- **Repository Pattern** with async/sync database access
+- **Dual Database Strategy**: Async for API, sync for Celery workers
 - **Command Query Responsibility Segregation** (API vs Background tasks)
 
 ### Advanced Features
-- **Dual Database Strategy**: Async for API, sync for Celery
 - **Exponential Backoff Retry**: Robust failure handling
 - **Type Safety**: Full Python + TypeScript coverage
 - **Real-time Updates**: WebSocket-like polling experience
@@ -322,26 +227,78 @@ This project demonstrates senior-level engineering practices:
 - **Connection Pooling**: Optimized database connections
 - **Task Queuing**: Horizontal scaling ready
 - **Static File Serving**: Efficient image delivery
-- **Build Optimization**: Vite for fast frontend builds
 
-## 📝 Assignment Requirements Met
+## 🚀 Deploying to Render
 
-✅ **API Layer**: FastAPI with POST /generate and GET /status endpoints  
-✅ **Async Job Queue**: Celery with Redis and automatic retries  
-✅ **Persistent Storage**: PostgreSQL + local file system  
-✅ **Async Architecture**: Full async/await throughout  
-✅ **Error Handling**: Comprehensive retry and failure logic  
-✅ **Configuration**: Environment-based with secrets management  
-✅ **Clean Architecture**: Service layer with separation of concerns  
-✅ **Bonus - Pydantic**: Full type validation and schemas  
-✅ **Bonus - Docker**: Complete containerization setup  
-✅ **Bonus - Alembic**: Database migration management  
-✅ **Bonus - Async ORM**: SQLAlchemy 2.0 with AsyncPG  
+This application is ready to deploy to Render.com as a web service. The database and Redis are already running on Render.
 
-## 👨‍💻 Author
+### Backend Deployment (Web Service)
 
-Built by Angel Rodriguez as a senior backend engineering demonstration project showcasing modern Python, FastAPI, and full-stack development practices.
+1. **Create a new Web Service on Render:**
+   - Connect your GitHub repository
+   - Use the following settings:
+     ```
+     Name: media-generation-backend
+     Environment: Docker
+     Branch: main
+     Root Directory: media-generation-service
+     ```
 
-## 📄 License
+2. **Environment Variables:**
+   Set these in Render's environment variables section:
+   ```
+   DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+   REDIS_URL=redis://red-ctsjhcq3esus73c0kp9g:6379
+   REPLICATE_API_TOKEN=your_actual_replicate_token
+   DEBUG=false
+   ALLOWED_ORIGINS=https://your-frontend-url.onrender.com,http://localhost:3000
+   ```
 
-MIT License - See LICENSE file for details. 
+3. **Docker Configuration:**
+   The `Dockerfile` in `media-generation-service/` is already configured for Render deployment.
+
+### Frontend Deployment (Static Site)
+
+1. **Create a new Static Site on Render:**
+   - Connect your GitHub repository
+   - Use the following settings:
+     ```
+     Name: media-generation-frontend
+     Branch: main
+     Root Directory: media-generation-frontend
+     Build Command: npm install && npm run build
+     Publish Directory: dist
+     ```
+
+2. **Environment Variables:**
+   Set this in Render's environment variables:
+   ```
+   VITE_API_URL=https://your-backend-service.onrender.com/api/v1
+   ```
+
+### Background Worker Deployment
+
+1. **Create a new Background Worker on Render:**
+   - Connect your GitHub repository
+   - Use the following settings:
+     ```
+     Name: media-generation-worker
+     Environment: Docker
+     Branch: main
+     Root Directory: media-generation-service
+     Docker Command: celery -A worker.celery_app worker --loglevel=info
+     ```
+
+2. **Use the same environment variables as the web service.**
+
+### Production Notes
+
+- The PostgreSQL and Redis instances are already running on Render
+- Make sure to update `ALLOWED_ORIGINS` with your actual frontend URL
+- Set `DEBUG=false` for production
+- Consider setting up health checks and monitoring
+- File uploads will be stored in the container's filesystem (consider using cloud storage for production)
+
+---
+
+**Built as a senior backend engineering demonstration project showcasing modern Python, FastAPI, and full-stack development practices.** 

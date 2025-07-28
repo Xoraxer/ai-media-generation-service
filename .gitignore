@@ -4,7 +4,9 @@
 # ====================================
 
 # ====== ENVIRONMENT & SECRETS ======
-.env
+# NOTE: .env files are committed for demo purposes only
+# In production, these should NEVER be committed to version control
+# .env
 .env.local
 .env.*.local
 .env.production
