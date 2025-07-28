@@ -51,6 +51,12 @@ class ApiClient {
   }
 
   getImageUrl(mediaPath: string): string {
+    // If it's already a full URL (CDN), return as-is
+    if (mediaPath.startsWith('http://') || mediaPath.startsWith('https://')) {
+      return mediaPath;
+    }
+    
+    // For local paths, construct the full URL
     const filename = mediaPath.split('/').pop();
     return `${API_BASE_URL.replace('/api/v1', '')}/images/${filename}`;
   }

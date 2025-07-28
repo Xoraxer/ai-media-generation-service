@@ -35,25 +35,11 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
   const loadJobs = async () => {
     try {
       setError(null);
-      // Load all jobs (including pending/processing for real-time updates)
-      const jobsData = await apiClient.getRecentJobs(0, 50);
+      // Load only completed jobs for history view
+      const jobsData = await apiClient.getCompletedJobs(0, 50);
       setJobs(jobsData);
 
-      // Start polling for any pending/processing jobs
-      jobsData.forEach(job => {
-        if (job.status === 'pending' || job.status === 'processing') {
-          if (!jobPollingService.isPolling(job.id)) {
-            jobPollingService.startPolling(
-              job.id,
-              updateJob, // Update job in real-time
-              (completedJob) => {
-                console.log(`Job ${completedJob.id} completed in history tab`);
-                updateJob(completedJob);
-              }
-            );
-          }
-        }
-      });
+      // No need to poll since we're only showing completed jobs
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load jobs');
     } finally {
@@ -148,8 +134,8 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
       )}
 
       {(() => {
-        // Filter out failed jobs, but keep pending/processing/completed
-        const visibleJobs = jobs.filter(job => job.status !== 'failed');
+        // All jobs are completed since we're using the completed endpoint
+        const visibleJobs = jobs;
         
         return visibleJobs.length === 0 ? (
           <Card className="max-w-2xl mx-auto">
@@ -208,14 +194,19 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
                   </div>
                 )}
 
-                {(job.status === 'pending' || job.status === 'processing') && (
-                  <div className="aspect-square flex items-center justify-center bg-muted rounded-md">
-                    <div className="text-center">
-                      <Loader2 className="w-12 h-12 mx-auto mb-2 animate-spin text-primary" />
-                      <p className="text-sm text-muted-foreground">
-                        {job.status === 'processing' ? 'Generating...' : 'In queue...'}
-                      </p>
-                    </div>
+                {/* Show completed image */}
+                {job.media_path && (
+                  <div className="aspect-square overflow-hidden rounded-md bg-muted">
+                    <img
+                      src={apiClient.getImageUrl(job.media_path)}
+                      alt={job.prompt}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback for broken images
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
                   </div>
                 )}
 
