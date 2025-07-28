@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -23,14 +23,7 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Update a specific job in the list
-  const updateJob = useCallback((updatedJob: JobStatusResponse) => {
-    setJobs(prevJobs => 
-      prevJobs.map(job => 
-        job.id === updatedJob.id ? updatedJob : job
-      )
-    );
-  }, []);
+  // Note: updateJob removed since we only show completed jobs (no real-time updates needed)
 
   const loadJobs = async () => {
     try {
@@ -51,12 +44,7 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
     loadJobs();
   }, [refreshTrigger]);
 
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      jobPollingService.stopAllPolling();
-    };
-  }, []);
+  // Note: No polling cleanup needed since we only show completed jobs
 
   const getStatusIcon = (status: string) => {
     switch (status) {
