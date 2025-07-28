@@ -11,7 +11,6 @@ import {
   ExternalLink 
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { jobPollingService } from '@/lib/polling';
 import type { JobStatusResponse } from '@/types/api';
 
 interface HistoryTabProps {
