@@ -35,9 +35,9 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                 JobUpdate(replicate_prediction_id=prediction_id)
             )
             
-            # Wait for prediction to complete
+            # Wait for prediction to complete (with 10 minute timeout)
             logger.info(f"Waiting for prediction {prediction_id} to complete")
-            completed_prediction = replicate_client.wait_for_prediction(prediction_id)
+            completed_prediction = replicate_client.wait_for_prediction(prediction_id, timeout=600)
             
             if completed_prediction["status"] == "succeeded":
                 output = completed_prediction["output"]

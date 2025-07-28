@@ -47,16 +47,57 @@ class ReplicateClient:
             raise
     
     def wait_for_prediction(self, prediction_id: str, timeout: int = 300) -> Dict[str, Any]:
-        """Wait for prediction to complete."""
+        """Wait for prediction to complete with proper timeout handling."""
+        import time
+        
+        start_time = time.time()
+        max_wait_time = timeout  # Maximum wait time in seconds
+        poll_interval = 2  # Poll every 2 seconds
+        
         try:
-            prediction = self.client.predictions.get(prediction_id)
-            prediction.wait()
-            return {
-                "id": prediction.id,
-                "status": prediction.status,
-                "output": prediction.output,
-                "error": getattr(prediction, 'error', None)
-            }
+            while time.time() - start_time < max_wait_time:
+                prediction = self.client.predictions.get(prediction_id)
+                
+                logger.info(f"Prediction {prediction_id} status: {prediction.status}")
+                
+                # Check if prediction is complete
+                if prediction.status == "succeeded":
+                    logger.info(f"Prediction {prediction_id} succeeded")
+                    return {
+                        "id": prediction.id,
+                        "status": prediction.status,
+                        "output": prediction.output,
+                        "error": getattr(prediction, 'error', None)
+                    }
+                elif prediction.status == "failed":
+                    logger.error(f"Prediction {prediction_id} failed")
+                    return {
+                        "id": prediction.id,
+                        "status": prediction.status,
+                        "output": prediction.output,
+                        "error": getattr(prediction, 'error', None)
+                    }
+                elif prediction.status == "canceled":
+                    logger.warning(f"Prediction {prediction_id} was canceled")
+                    return {
+                        "id": prediction.id,
+                        "status": prediction.status,
+                        "output": prediction.output,
+                        "error": getattr(prediction, 'error', None)
+                    }
+                
+                # If still processing, wait before next poll
+                if prediction.status in ["starting", "processing"]:
+                    time.sleep(poll_interval)
+                else:
+                    # Unknown status, log and continue
+                    logger.warning(f"Unknown prediction status: {prediction.status}")
+                    time.sleep(poll_interval)
+            
+            # Timeout reached
+            logger.error(f"Prediction {prediction_id} timed out after {timeout} seconds")
+            raise TimeoutError(f"Prediction {prediction_id} timed out after {timeout} seconds")
+            
         except Exception as e:
             logger.error(f"Failed to wait for prediction {prediction_id}: {e}")
             raise

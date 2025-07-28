@@ -40,12 +40,14 @@ os.makedirs(generated_images_path, exist_ok=True)
 app.mount("/images", StaticFiles(directory=generated_images_path), name="images")
 
 @app.get("/", tags=["Root"])
+@app.head("/", tags=["Root"])
 async def root():
-    """Root endpoint."""
+    """Root endpoint - supports both GET and HEAD for health checks."""
     return {
         "message": f"Welcome to {settings.project_name}",
         "docs": "/docs",
-        "health": f"{settings.api_v1_prefix}/health"
+        "health": f"{settings.api_v1_prefix}/health",
+        "status": "healthy"
     }
 
 @app.on_event("startup")
