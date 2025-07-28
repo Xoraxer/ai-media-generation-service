@@ -50,32 +50,19 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                     image_url = output
                 
                 if image_url:
-                    # Generate local file path
-                    filename = f"{job_id}.png"
-                    local_path = os.path.join(settings.storage_path, "generated", filename)
+                    # For Render deployment, use the direct Replicate image URL
+                    # This avoids ephemeral storage issues in containerized environments
+                    logger.info(f"Using direct image URL: {image_url}")
                     
-                    # Download image
-                    if replicate_client.download_image(image_url, local_path):
-                        # Verify file was actually saved
-                        if os.path.exists(local_path):
-                            file_size = os.path.getsize(local_path)
-                            logger.info(f"File saved successfully: {local_path} ({file_size} bytes)")
-                        else:
-                            logger.error(f"File was not saved: {local_path}")
-                            raise Exception("File was not saved to filesystem")
-                        
-                        # Update job as completed with relative path for API serving
-                        media_url = f"/images/{filename}"
-                        SyncJobService.update_job(
-                            db, job_id,
-                            JobUpdate(
-                                status=JobStatus.COMPLETED,
-                                media_path=media_url
-                            )
+                    # Update job as completed with direct image URL
+                    SyncJobService.update_job(
+                        db, job_id,
+                        JobUpdate(
+                            status=JobStatus.COMPLETED,
+                            media_path=image_url
                         )
-                        logger.info(f"Job {job_id} completed successfully")
-                    else:
-                        raise Exception("Failed to download generated image")
+                    )
+                    logger.info(f"Job {job_id} completed successfully with direct URL")
                 else:
                     raise Exception("No image URL in prediction output")
             
