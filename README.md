@@ -117,9 +117,9 @@ app/
 3. **Task queued** → Celery task enqueued to Redis
 4. **Background processing** → Worker calls Replicate API
 5. **Image generation** → AI model processes the request
-6. **File storage** → Generated image downloaded locally
-7. **Status update** → Job marked as "completed" with image path
-8. **Real-time updates** → Frontend polls and displays result
+6. **CDN URL retrieval** → Generated image URL obtained from Replicate
+7. **Status update** → Job marked as "completed" with CDN image URL
+8. **Real-time updates** → Frontend polls and displays result from CDN
 
 ## 🛠️ Manual Development Setup (Optional)
 
@@ -189,8 +189,9 @@ npm run dev
    - Check API rate limits
 
 3. **Images not loading**
-   - Check storage directory permissions
-   - Verify static file serving at `/images/`
+   - Verify Replicate API token is correct
+   - Check that jobs completed successfully (status: "completed")
+   - Images are served directly from Replicate's CDN - no local storage needed
 
 ### Debug Commands
 ```bash
@@ -203,6 +204,11 @@ docker compose logs -f worker
 
 # Test API health
 curl http://localhost:8000/api/v1/health
+
+# Test image generation
+curl -X POST http://localhost:8000/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "a beautiful sunset", "model": "stability-ai/stable-diffusion-3"}'
 ```
 
 ## 🏆 Technical Highlights
@@ -248,14 +254,20 @@ This application is ready to deploy to Render.com as a web service. The database
    Set these in Render's environment variables section:
    ```
    DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
-   REDIS_URL=redis://red-ctsjhcq3esus73c0kp9g:6379
+   REDIS_URL=redis://red-d23vblqdbo4c7389c94g:6379
    REPLICATE_API_TOKEN=your_actual_replicate_token
    DEBUG=false
+   PROJECT_NAME=Media Generation Service
+   API_V1_PREFIX=/api/v1
+   MAX_RETRIES=3
+   RETRY_BACKOFF_BASE=2.0
    ALLOWED_ORIGINS=https://your-frontend-url.onrender.com,http://localhost:3000
    ```
 
 3. **Docker Configuration:**
    The `Dockerfile` in `media-generation-service/` is already configured for Render deployment.
+   
+   **Note**: No volume mounts needed for image storage since images are served from Replicate's CDN.
 
 ### Frontend Deployment (Static Site)
 
@@ -289,15 +301,28 @@ This application is ready to deploy to Render.com as a web service. The database
      Docker Command: celery -A worker.celery_app worker --loglevel=info
      ```
 
-2. **Use the same environment variables as the web service.**
+2. **Environment Variables:**
+   Use the same environment variables as the web service:
+   ```
+   DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0kKAzvEChD4hGJv6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a.oregon-postgres.render.com/mediadb_h6dy
+   REDIS_URL=redis://red-d23vblqdbo4c7389c94g:6379
+   REPLICATE_API_TOKEN=your_actual_replicate_token
+   DEBUG=false
+   PROJECT_NAME=Media Generation Service
+   API_V1_PREFIX=/api/v1
+   MAX_RETRIES=3
+   RETRY_BACKOFF_BASE=2.0
+   ```
 
 ### Production Notes
 
 - The PostgreSQL and Redis instances are already running on Render
 - Make sure to update `ALLOWED_ORIGINS` with your actual frontend URL
 - Set `DEBUG=false` for production
+- **Images are served from Replicate's CDN** - no local storage needed
+- **Both Web Service and Background Worker need the same environment variables**
 - Consider setting up health checks and monitoring
-- File uploads will be stored in the container's filesystem (consider using cloud storage for production)
+- Generated images are permanently available via Replicate's CDN URLs
 
 ---
 

@@ -84,6 +84,20 @@ class AsyncJobService:
         logger.info(f"Deleted {deleted_count} failed jobs")
         return deleted_count
 
+    @staticmethod
+    async def delete_jobs_with_local_paths(db: AsyncSession) -> int:
+        """Delete completed jobs that have local image paths (broken links)."""
+        result = await db.execute(
+            delete(Job).where(
+                (Job.status == JobStatus.COMPLETED.value) &
+                (Job.media_path.like('/images/%'))
+            )
+        )
+        await db.commit()
+        deleted_count = result.rowcount or 0
+        logger.info(f"Deleted {deleted_count} jobs with broken local image paths")
+        return deleted_count
+
 
 class SyncJobService:
     """Sync service for Celery tasks."""

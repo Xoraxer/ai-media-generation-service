@@ -104,6 +104,18 @@ async def delete_failed_jobs(
     }
 
 
+@router.delete("/jobs/broken-images", tags=["Jobs"])
+async def delete_jobs_with_broken_images(
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Delete completed jobs that have local image paths (broken links)."""
+    deleted_count = await AsyncJobService.delete_jobs_with_local_paths(db)
+    return {
+        "message": f"Successfully deleted {deleted_count} jobs with broken local image paths",
+        "deleted_count": deleted_count
+    }
+
+
 @router.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint."""

@@ -42,7 +42,7 @@ services:
       - API_V1_PREFIX=/api/v1
       - STORAGE_PATH=./storage
     volumes:
-      - ./storage:/app/storage
+      # Note: No storage volume needed - images served from Replicate CDN
       - .:/app
     depends_on:
       redis:
@@ -59,7 +59,7 @@ services:
       - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
       - DEBUG=true
     volumes:
-      - ./storage:/app/storage
+      # Note: No storage volume needed - images served from Replicate CDN
       - .:/app
     depends_on:
       redis:
