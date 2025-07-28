@@ -32,8 +32,12 @@ class Settings(BaseSettings):
     max_retries: int = 3
     retry_backoff_base: float = 2.0
     
-    # CORS Settings
-    allowed_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    # CORS Settings (comma-separated string that gets split into a list)
+    allowed_origins: str = "http://localhost:5173,http://localhost:3000"
+    
+    def get_allowed_origins(self) -> list[str]:
+        """Parse the comma-separated allowed_origins string into a list."""
+        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
     
     class Config:
         env_file = ".env"
