@@ -29,7 +29,17 @@ export function HistoryTab({ refreshTrigger }: HistoryTabProps) {
       setError(null);
       // Load only completed jobs for history view
       const jobsData = await apiClient.getCompletedJobs(0, 50);
-      setJobs(jobsData);
+      
+      // Remove duplicates and filter out jobs with broken local paths
+      const uniqueJobs = jobsData.filter((job, index, self) => {
+        // Remove duplicates by ID
+        const isUnique = self.findIndex(j => j.id === job.id) === index;
+        // Remove jobs with broken local image paths
+        const hasValidImage = !job.media_path?.startsWith('/images/');
+        return isUnique && hasValidImage;
+      });
+      
+      setJobs(uniqueJobs);
 
       // No need to poll since we're only showing completed jobs
     } catch (err) {
