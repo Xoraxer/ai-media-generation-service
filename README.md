@@ -354,7 +354,7 @@ This project demonstrates senior-level engineering practices:
 
 ## 👨‍💻 Author
 
-Built as a senior backend engineering demonstration project showcasing modern Python, FastAPI, and full-stack development practices.
+Built by Angel Rodriguez as a senior backend engineering demonstration project showcasing modern Python, FastAPI, and full-stack development practices.
 
 ## 📄 License
 
