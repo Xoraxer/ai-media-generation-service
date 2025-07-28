@@ -226,20 +226,6 @@ src/
 
 ## 🛠️ Development
 
-### Code Quality
-```bash
-# Backend
-cd media-generation-service
-black app/                    # Code formatting
-flake8 app/                   # Linting
-mypy app/                     # Type checking
-
-# Frontend  
-cd media-generation-frontend
-npm run lint                  # ESLint
-npm run build                 # Type checking via tsc
-```
-
 ### Testing
 ```bash
 # Backend
