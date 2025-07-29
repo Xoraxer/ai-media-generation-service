@@ -102,17 +102,17 @@ RETRY_BACKOFF_BASE=2.0
 
 *App Service Environment Variables:*
 ```
-DATABASE_URL=postgresql+asyncpg://mediadb_h6dy_user:Gb5dB0KkAzvEChD4hGJV6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a/mediadb_h6dy
-REDIS_URL=redis://red-d23r1sngi27c738b0hrg:6379
-REPLICATE_API_TOKEN=r8_DVk2kX8HmyVqaxTgQ6nRGNcLWC8lYzC1m7H9M
+DATABASE_URL=postgresql+asyncpg://...
+REDIS_URL=redis://red-d23...
+REPLICATE_API_TOKEN=yourapitoken
 DEBUG=False
 ```
 
 *Worker Service Environment Variables:*
 ```
-DATABASE_URL=postgresql://mediadb_h6dy_user:Gb5dB0KkAzvEChD4hGJV6jgXRJR6ZNp9@dpg-d23r5rnfte5s73bfrdhg-a/mediadb_h6dy
-REDIS_URL=redis://red-d23r1sngi27c738b0hrg:6379
-REPLICATE_API_TOKEN=r8_DVk2kX8HmyVqaxTgQ6nRGNcLWC8lYzC1m7H9M
+DATABASE_URL=postgresql+asyncpg://...
+REDIS_URL=redis://red-d23...
+REPLICATE_API_TOKEN=yourapitoken
 DEBUG=False
 ```
 
