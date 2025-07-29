@@ -27,7 +27,11 @@ cd ai-media-generation-service/media-generation-service
 
 # Set up environment
 cp .env.example .env
-# Edit .env and add your Replicate API token
+
+# Open .env and paste your Replicate API token:
+Open the .env file located at media-generation-service/.env and replace:
+REPLICATE_API_TOKEN=PASTE_YOUR_TOKEN_HERE
+with your actual token from https://replicate.com/account/api-tokens
 
 # Start all services
 docker compose up --build
