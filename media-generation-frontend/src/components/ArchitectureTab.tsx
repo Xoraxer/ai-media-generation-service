@@ -132,12 +132,12 @@ export function ArchitectureTab() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm space-y-2">
-              <p><strong>Rate Limiting:</strong> 5 requests/second for generation tasks</p>
-              <p><strong>Retry Strategy:</strong> Exponential backoff with jitter</p>
-              <p><strong>Resource Management:</strong> 30min task timeout, 25min soft limit</p>
+              <p><strong>Retry Strategy:</strong> Exponential backoff (3 retries max)</p>
+              <p><strong>Resource Management:</strong> 10min prediction timeout</p>
               <p><strong>Queue Isolation:</strong> Dedicated media_generation queue</p>
-              <p><strong>Worker Scaling:</strong> Horizontal scaling based on queue depth</p>
+              <p><strong>Worker Scaling:</strong> Horizontal scaling ready</p>
               <p><strong>Monitoring:</strong> Task tracking with status persistence</p>
+              <p><strong>Environment Awareness:</strong> Dev vs production optimizations</p>
             </div>
           </CardContent>
         </Card>
@@ -238,9 +238,9 @@ export function ArchitectureTab() {
               </div>
               
               <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-semibold text-sm text-blue-700 dark:text-blue-300">File Storage</h4>
+                <h4 className="font-semibold text-sm text-blue-700 dark:text-blue-300">Smart Storage</h4>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  Image downloaded and stored locally
+                  Environment-aware: Local dev, CDN production
                 </p>
               </div>
               
@@ -289,6 +289,34 @@ export function ArchitectureTab() {
           <CardHeader>
             <div className="flex items-center space-x-2">
               <Network className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">Environment-Aware Design</CardTitle>
+            </div>
+            <CardDescription>
+              Smart adaptation to deployment environment constraints
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm space-y-3">
+              <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-800">
+                <p><strong>Development (DEBUG=true):</strong> Local image storage</p>
+                <p className="text-xs text-muted-foreground mt-1">Downloads and serves images via /api/v1/images/ endpoint</p>
+              </div>
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
+                <p><strong>Production (DEBUG=false):</strong> Direct CDN URLs</p>
+                <p className="text-xs text-muted-foreground mt-1">Uses Replicate CDN URLs (container storage limitations)</p>
+              </div>
+              <div className="p-3 bg-purple-50 dark:bg-purple-950/20 rounded border border-purple-200 dark:border-purple-800">
+                <p><strong>Benefits:</strong> Optimal performance in each environment</p>
+                <p className="text-xs text-muted-foreground mt-1">Adapts to infrastructure constraints automatically</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <Network className="w-5 h-5 text-primary" />
               <CardTitle className="text-lg">External API Integration</CardTitle>
             </div>
             <CardDescription>
@@ -300,7 +328,7 @@ export function ArchitectureTab() {
               <p><strong>Encapsulation:</strong> Dedicated ReplicateClient class</p>
               <p><strong>Reliability:</strong> Built-in retry logic for network failures</p>
               <p><strong>Resource Management:</strong> Streaming downloads for large images</p>
-              <p><strong>Timeout Handling:</strong> 300s prediction timeout with monitoring</p>
+              <p><strong>Timeout Handling:</strong> 10min prediction timeout with monitoring</p>
               <p><strong>Testability:</strong> Easy to mock for comprehensive testing</p>
             </div>
           </CardContent>
@@ -368,7 +396,7 @@ export function ArchitectureTab() {
                 <p><strong>API Layer:</strong> Multiple FastAPI instances behind load balancer</p>
                 <p><strong>Worker Layer:</strong> Auto-scaling Celery workers based on queue depth</p>
                 <p><strong>Database:</strong> Read replicas for status queries</p>
-                <p><strong>Storage:</strong> Migration path to distributed storage (S3/GCS)</p>
+                <p><strong>Storage:</strong> Environment-aware image handling</p>
               </div>
             </div>
             <div>
@@ -376,7 +404,7 @@ export function ArchitectureTab() {
               <div className="space-y-2 text-sm">
                 <p><strong>Connection Pooling:</strong> SQLAlchemy connection pools</p>
                 <p><strong>Async Operations:</strong> Non-blocking I/O throughout stack</p>
-                <p><strong>Task Batching:</strong> Future enhancement for bulk operations</p>
+                <p><strong>Smart Storage:</strong> Environment-based image optimization</p>
                 <p><strong>Caching:</strong> Redis for frequently accessed data</p>
               </div>
             </div>
