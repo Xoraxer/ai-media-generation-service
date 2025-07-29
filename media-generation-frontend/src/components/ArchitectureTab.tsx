@@ -10,7 +10,6 @@ import {
   Cpu,
   Settings,
   AlertTriangle,
-  Network,
   CheckCircle,
   Sparkles,
   Code,
