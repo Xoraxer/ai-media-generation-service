@@ -4,7 +4,7 @@ A full-stack application for AI image generation using the Replicate API, built 
 
 ## 🌐 Live Demo
 
-**Try the live application:** [https://media-generation-frontend.onrender.com](https://media-generation-frontend.onrender.com)
+**Try the live application:** [https://ai-media-generation-service.onrender.com/](https://ai-media-generation-service.onrender.com/)
 
 ## 🏗️ Tech Stack
 
