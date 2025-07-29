@@ -87,26 +87,39 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                     image_url = output
                 
                 if image_url:
-                    logger.info(f"Downloading and saving image from: {image_url}")
+                    # Check if we're in production (DEBUG=false) or development
+                    debug_mode = settings.debug if hasattr(settings, 'debug') else True
                     
-                    # Download and save the image locally
-                    try:
-                        filename = download_and_save_image(image_url, job_id)
-                        local_path = f"/images/{filename}"
-                        
-                        # Update job as completed with local image path
-                        SyncJobService.update_job(
-                            db, job_id,
-                            JobUpdate(
-                                status=JobStatus.COMPLETED,
-                                media_path=local_path
+                    if debug_mode:
+                        # Development: Download and save locally
+                        logger.info(f"Development mode: Downloading and saving image from: {image_url}")
+                        try:
+                            filename = download_and_save_image(image_url, job_id)
+                            local_path = f"/images/{filename}"
+                            
+                            SyncJobService.update_job(
+                                db, job_id,
+                                JobUpdate(
+                                    status=JobStatus.COMPLETED,
+                                    media_path=local_path
+                                )
                             )
-                        )
-                        logger.info(f"Job {job_id} completed successfully with local image: {local_path}")
-                        
-                    except Exception as download_error:
-                        logger.error(f"Failed to download image for job {job_id}: {download_error}")
-                        # Fall back to direct URL if download fails
+                            logger.info(f"Job {job_id} completed successfully with local image: {local_path}")
+                            
+                        except Exception as download_error:
+                            logger.error(f"Failed to download image for job {job_id}: {download_error}")
+                            # Fall back to direct URL
+                            SyncJobService.update_job(
+                                db, job_id,
+                                JobUpdate(
+                                    status=JobStatus.COMPLETED,
+                                    media_path=image_url
+                                )
+                            )
+                            logger.warning(f"Job {job_id} completed with direct URL fallback: {image_url}")
+                    else:
+                        # Production: Use direct CDN URL (Render containers don't share storage)
+                        logger.info(f"Production mode: Using direct CDN URL: {image_url}")
                         SyncJobService.update_job(
                             db, job_id,
                             JobUpdate(
@@ -114,7 +127,7 @@ def process_media_generation(self, job_id: str, model: str, input_data: Dict[str
                                 media_path=image_url
                             )
                         )
-                        logger.warning(f"Job {job_id} completed with direct URL fallback: {image_url}")
+                        logger.info(f"Job {job_id} completed successfully with CDN URL: {image_url}")
                 else:
                     raise Exception("No image URL in prediction output")
             

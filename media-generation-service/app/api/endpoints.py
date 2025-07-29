@@ -131,6 +131,31 @@ async def delete_jobs_with_missing_images(
     }
 
 
+@router.delete("/jobs/broken-local-paths", tags=["Jobs"])
+async def delete_jobs_with_broken_local_paths(
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Delete jobs with local image paths that don't work in production."""
+    from sqlalchemy import delete
+    from app.models.job import Job
+    from app.models.schemas import JobStatus
+    
+    # Delete jobs with local paths that start with /images/ (these don't work in production)
+    result = await db.execute(
+        delete(Job).where(
+            (Job.status == JobStatus.COMPLETED.value) &
+            (Job.media_path.like('/images/%'))
+        )
+    )
+    await db.commit()
+    deleted_count = result.rowcount or 0
+    
+    return {
+        "message": f"Successfully deleted {deleted_count} jobs with broken local image paths",
+        "deleted_count": deleted_count
+    }
+
+
 @router.post("/jobs/fix-paths", tags=["Jobs"])
 async def fix_incorrect_image_paths(
     db: AsyncSession = Depends(get_async_db)
