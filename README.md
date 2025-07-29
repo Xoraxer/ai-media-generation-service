@@ -21,8 +21,9 @@ A full-stack application for AI image generation using the Replicate API, built 
 
 ### Quick Start
 ```bash
-git clone <repository-url>
-cd demo_project/media-generation-service
+# Clone the repository
+git clone https://github.com/Xoraxer/ai-media-generation-service.git
+cd ai-media-generation-service/media-generation-service
 
 # Set up environment
 cp .env.example .env
@@ -30,6 +31,7 @@ cp .env.example .env
 
 # Start all services
 docker compose up --build
+
 
 # Access the application
 # Frontend: http://localhost:3000
